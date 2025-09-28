@@ -1,0 +1,55 @@
+DROP TABLE IF EXISTS StudentEnrollments;
+
+CREATE TABLE StudentEnrollments (
+    enrollment_id INT PRIMARY KEY,
+    student_name VARCHAR(100) NOT NULL,
+    course_id VARCHAR(10) NOT NULL,
+    enrollment_date DATE NOT NULL,
+    UNIQUE(student_name, course_id)  -- prevent duplicate enrollments
+) ENGINE=InnoDB;
+
+START TRANSACTION;
+INSERT INTO StudentEnrollments VALUES (1, 'Ashish', 'CSE101', '2024-07-01');
+COMMIT;
+
+START TRANSACTION;
+
+INSERT INTO StudentEnrollments VALUES (2, 'Ashish', 'CSE101', '2024-07-02');
+ROLLBACK;
+
+-- Check table after Part A
+SELECT 'Part A Result' AS Step;
+SELECT * FROM StudentEnrollments;
+START TRANSACTION;
+
+SELECT * FROM StudentEnrollments
+WHERE student_name='Ashish' AND course_id='CSE101'
+FOR UPDATE;
+
+UPDATE StudentEnrollments
+SET enrollment_date='2024-07-08'
+WHERE student_name='Ashish' AND course_id='CSE101';
+
+COMMIT;
+
+START TRANSACTION;
+SELECT * FROM StudentEnrollments
+WHERE student_name='Ashish' AND course_id='CSE101'
+FOR UPDATE;
+
+UPDATE StudentEnrollments
+SET enrollment_date='2024-07-09'
+WHERE student_name='Ashish' AND course_id='CSE101';
+
+COMMIT;
+
+-- User B now updates the same row (will wait if lock was active)
+START TRANSACTION;
+UPDATE StudentEnrollments
+SET enrollment_date='2024-07-10'
+WHERE student_name='Ashish' AND course_id='CSE101';
+COMMIT;
+
+-- Final table state
+SELECT 'Final Result After Part C' AS Step;
+SELECT * FROM StudentEnrollments;
